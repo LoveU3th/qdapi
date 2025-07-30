@@ -11,11 +11,21 @@ import (
 )
 
 func main() {
-	configs, err := qdapi.LoadConfigFromJSON("./config.json")
+	// 优先尝试从环境变量加载配置
+	configs, err := qdapi.LoadConfigFromEnv()
 	if err != nil {
-		fmt.Printf("%s\n", "读取配置文件失败,请检查抓包数据")
-		return
+		// 如果环境变量加载失败，尝试从文件加载
+		fmt.Printf("从环境变量加载配置失败，尝试从config.json加载: %v\n", err)
+		configs, err = qdapi.LoadConfigFromJSON("./config.json")
+		if err != nil {
+			fmt.Printf("%s\n", "读取配置文件失败,请检查抓包数据或环境变量配置")
+			return
+		}
+		fmt.Printf("成功从config.json加载了%d个账号配置\n", len(configs))
+	} else {
+		fmt.Printf("成功从环境变量加载了%d个账号配置\n", len(configs))
 	}
+	
 	var cli *http.Client
 	if runtime.GOOS == "darwin" {
 		//for charles

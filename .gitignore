@@ -3,3 +3,5 @@
 /.idea
 QDapi.zip
 /bin
+config.example.json
+SECRETS_SETUP.md

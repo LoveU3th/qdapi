@@ -29,8 +29,12 @@
 + 修改`config.json`中数据并运行`qdapi.exe`/`run.bat`
 
 ### github action 每天自动运行(推荐)
-+ fork[本项目](https://github.com/pzx521521/qdapi), 并修改`config.json`
-+ 如果怕config.json信息泄露,请设置为private或自行使用github action的Secrets/Variables
++ fork[本项目](https://github.com/pzx521521/qdapi)
++ **推荐方式**：使用 GitHub Actions 的 Secrets 功能保护配置信息
+  + 详细配置步骤请查看 [SECRETS_SETUP.md](./SECRETS_SETUP.md)
+  + 这样可以避免配置信息泄露，更加安全
++ **传统方式**：直接修改 `config.json` 文件
+  + 如果使用此方式，建议将仓库设为私有
 
 ### 其他平台的运行
 + 修改`config.json`中数据并运行cmd/main.go
