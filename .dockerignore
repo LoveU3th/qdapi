@@ -1,0 +1,31 @@
+# Git 相关
+.git
+.gitignore
+.github
+
+# 文档
+README.md
+*.md
+
+# 测试文件
+*_test.go
+test.py
+
+# 构建产物
+*.exe
+myapp
+qdapi
+
+# 临时文件
+*.tmp
+*.log
+
+# IDE 文件
+.vscode
+.idea
+*.swp
+*.swo
+
+# 其他
+curl.txt
+MAKEFILE 

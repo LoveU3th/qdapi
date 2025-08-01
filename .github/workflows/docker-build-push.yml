@@ -1,0 +1,94 @@
+name: Build and Push Docker Image
+
+# 触发条件是每次推送了带有标签的提交。通常用于发布稳定版本。
+on:
+  push:
+    tags:
+      - "*"
+  # 也可以手动触发
+  workflow_dispatch:
+
+# 设置 Docker Hub 的用户名和仓库名。
+env:
+  DOCKER_HUB_USERNAME: cursor1st
+  DOCKER_HUB_REPO: qdapi
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60  # 设置超时时间为1小时
+    permissions:
+      contents: write
+
+    steps:
+    # 检出仓库
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+    # 设置 Go 环境
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+    # 更新依赖
+      - name: Clean and update dependencies
+        run: |
+          go mod tidy
+
+      - name: 设置构建环境
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          else
+            echo "VERSION=latest" >> $GITHUB_ENV
+          fi
+
+    # 设置 QEMU
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+    # 设置 Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+    # 登录到 Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+      
+    # 提取 Docker 元数据
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            docker.io/${{ env.DOCKER_HUB_USERNAME }}/${{ env.DOCKER_HUB_REPO }}
+          tags: |
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+            type=semver,pattern={{version}}
+            type=ref,event=branch
+            type=sha
+        
+    # 构建并推送 Docker 镜像
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          # 指定 Docker 构建的上下文为当前目录
+          context: .
+          platforms: linux/amd64,linux/arm64
+          # 设置为 true，表示构建完成后推送到 Docker Hub
+          push: true
+          # 使用 metadata 步骤中提取的标签
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # 使用 GitHub Actions 缓存
+          cache-from: type=gha
+          # 使用 GitHub Actions 缓存，并设置缓存模式为最大缓存
+          cache-to: type=gha,mode=max
+          # 设置编译时的并发数为 4
+          build-args: |
+            MAKEFLAGS=-j4 

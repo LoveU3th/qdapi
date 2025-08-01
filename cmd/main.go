@@ -11,20 +11,34 @@ import (
 )
 
 func main() {
-	// 优先尝试从环境变量加载配置
-	configs, err := qdapi.LoadConfigFromEnv()
-	if err != nil {
-		// 如果环境变量加载失败，尝试从文件加载
-		fmt.Printf("从环境变量加载配置失败，尝试从config.json加载: %v\n", err)
-		configs, err = qdapi.LoadConfigFromJSON("./config.json")
-		if err != nil {
-			fmt.Printf("%s\n", "读取配置文件失败,请检查抓包数据或环境变量配置")
-			return
-		}
-		fmt.Printf("成功从config.json加载了%d个账号配置\n", len(configs))
-	} else {
-		fmt.Printf("成功从环境变量加载了%d个账号配置\n", len(configs))
+	// 优先尝试从 Docker 挂载路径读取配置
+	configPaths := []string{
+		"/app/config/config.json", // Docker 挂载路径
+		"./config.json",           // 本地路径
 	}
+	
+	var configs []qdapi.QiDianApiConfig
+	var err error
+	var configPath string
+	
+	for _, path := range configPaths {
+		configs, err = qdapi.LoadConfigFromJSON(path)
+		if err == nil {
+			configPath = path
+			break
+		}
+	}
+	
+	if err != nil {
+		fmt.Printf("读取配置文件失败，请检查以下路径是否存在配置文件:\n")
+		for _, path := range configPaths {
+			fmt.Printf("- %s\n", path)
+		}
+		fmt.Printf("错误信息: %v\n", err)
+		return
+	}
+	
+	fmt.Printf("成功从 %s 加载了%d个账号配置\n", configPath, len(configs))
 	
 	var cli *http.Client
 	if runtime.GOOS == "darwin" {

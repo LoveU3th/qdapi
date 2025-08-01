@@ -28,13 +28,26 @@
 + [cdn](https://app.parap.dpdns.org/qdapi/qdapi.zip)
 + 修改`config.json`中数据并运行`qdapi.exe`/`run.bat`
 
-### github action 每天自动运行(推荐)
-+ fork[本项目](https://github.com/pzx521521/qdapi)
-+ **推荐方式**：使用 GitHub Actions 的 Secrets 功能保护配置信息
-  + 详细配置步骤请查看 [SECRETS_SETUP.md](./SECRETS_SETUP.md)
-  + 这样可以避免配置信息泄露，更加安全
-+ **传统方式**：直接修改 `config.json` 文件
-  + 如果使用此方式，建议将仓库设为私有
+### Docker 部署(推荐)
++ 使用预构建的 Docker 镜像，简单快捷
++ 拉取镜像：`docker pull cursor1st/qdapi:latest`
++ 运行容器：
+  ```bash
+  # 创建配置文件目录
+  mkdir -p ./config
+  # 将你的 config.json 放到 ./config 目录下
+  cp config.json ./config/
+  # 运行容器
+  docker run --rm -v ./config:/app/config cursor1st/qdapi:latest
+  ```
++ **定时运行**：可以配合 cron 或其他调度工具定时运行
++ **详细使用说明**：请查看 [DOCKER_USAGE.md](./DOCKER_USAGE.md)
+
+### 本地运行  
++ [github](https://github.com/skeeto/w64devkit/releases)
++ [lanzouq](https://wwtw.lanzouq.com/icI8r322p9na)
++ [cdn](https://app.parap.dpdns.org/qdapi/qdapi.zip)
++ 修改`config.json`中数据并运行`qdapi.exe`/`run.bat`
 
 ### 其他平台的运行
 + 修改`config.json`中数据并运行cmd/main.go
